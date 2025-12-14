@@ -18,4 +18,4 @@ function requireRole(...allowedRoles) {
   };
 }
 
-module.exports = { requireRole };
+module.exports = requireRole;  // ← Changed this line
