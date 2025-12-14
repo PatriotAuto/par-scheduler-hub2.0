@@ -10,6 +10,11 @@ const path = require('path');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve the new scheduler UI as the main page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'scheduler.html'));
+});
+
 app.get('/health', async (req, res) => {
   try {
     // Simple test query: count tenants
