@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scheduler</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-alt: #020617;
+      --panel-bg: #0b1220;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.2);
+      --accent-strong: #0ea5e9;
+      --border-subtle: #1e293b;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --slot-border: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%, #000 100%);
+      color: var(--text-main);
+    }
+
+    header {
+      padding: 10px 16px;
+      background: linear-gradient(to right, #020617, #0b1120);
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #111827;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header .title {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header .pill {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent);
+    }
+
+    main {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #1e293b 0, #020617 60%);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow:
+        0 22px 45px rgba(15, 23, 42, 0.9),
+        inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+      padding: 14px 16px 16px;
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .status strong {
+      color: var(--accent);
+    }
+
+    .login-panel {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .login-panel input {
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 6px 10px;
+      color: var(--text-main);
+      font-size: 0.82rem;
+      min-width: 200px;
+    }
+
+    .login-panel input::placeholder {
+      color: #6b7280;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    input[type="date"] {
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 4px 8px;
+      color: var(--text-main);
+      font-size: 0.82rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: linear-gradient(to right, var(--accent), var(--accent-strong));
+      color: #0b1120;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4), 0 10px 25px rgba(15, 23, 42, 0.9);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 1);
+      background: linear-gradient(to right, var(--accent-strong), var(--accent));
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.9);
+    }
+
+    #logoutBtn {
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      box-shadow: none;
+    }
+
+    #logoutBtn:hover {
+      color: #e5e7eb;
+      border-color: rgba(248, 250, 252, 0.7);
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .scheduler-wrapper {
+      margin-top: 6px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+    }
+
+    .scheduler {
+      display: grid;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      overflow-x: auto;
+    }
+
+    .scheduler-header {
+      background: linear-gradient(to bottom, #020617, #020617, #020617);
+      font-weight: 500;
+      text-align: center;
+      padding: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      color: #e5e7eb;
+    }
+
+    .time-slot {
+      border-right: 1px solid var(--slot-border);
+      border-bottom: 1px solid var(--slot-border);
+      position: relative;
+      height: 30px;
+      font-size: 0.75rem;
+      color: #6b7280;
+      padding-left: 4px;
+      background: radial-gradient(circle at top, #020617 0, #020617 45%, #020617 100%);
+    }
+
+    .time-label {
+      background: linear-gradient(to right, #020617, #020617);
+      border-right: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--slot-border);
+      font-size: 0.75rem;
+      text-align: right;
+      padding-right: 6px;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      color: #6b7280;
+    }
+
+    .appointment {
+      position: absolute;
+      left: 3px;
+      right: 3px;
+      top: 3px;
+      bottom: 3px;
+      background: radial-gradient(circle at top left, rgba(52, 211, 153, 0.95), rgba(16, 185, 129, 0.95));
+      color: #022c22;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      box-shadow: 0 10px 18px rgba(6, 95, 70, 0.6);
+      border: 1px solid rgba(52, 211, 153, 0.9);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .appointment[data-status="CONFIRMED"] {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.95), rgba(37, 99, 235, 0.95));
+      color: #0b1120;
+      border-color: rgba(56, 189, 248, 0.9);
+    }
+
+    .appointment[data-status="CANCELLED"] {
+      background: radial-gradient(circle at top left, rgba(248, 113, 113, 0.95), rgba(239, 68, 68, 0.95));
+      color: #fee2e2;
+      border-color: rgba(248, 113, 113, 0.9);
+    }
+
+  .hidden {
+  display: none !important;
+}
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      position: relative;
+      background: radial-gradient(circle at top left, #1e293b 0, #020617 60%);
+      padding: 20px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 22px 45px rgba(15, 23, 42, 0.9), inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .modal-content p {
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .modal-content p strong {
+      color: var(--text-main);
+      display: inline-block;
+      width: 80px;
+    }
+
+    .close-button {
+      color: var(--text-muted);
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .close-button:hover,
+    .close-button:focus {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      PAR Scheduler
+      <span class="pill">Prototype</span>
+    </div>
+    <button id="logoutBtn" class="hidden">Logout</button>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="top-row">
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="login-panel" id="loginPanel">
+        <input type="email" id="emailInput" placeholder="Email" />
+        <input type="password" id="passwordInput" placeholder="Password" />
+        <button id="loginBtn">Login</button>
+      </div>
+
+      <div id="controls" class="controls hidden">
+        <label>
+          Date:
+          <input type="date" id="dateInput" />
+        </label>
+        <button id="refreshBtn">Refresh</button>
+      </div>
+
+      <div class="scheduler-wrapper">
+        <div id="schedulerContainer"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="appointmentModal" class="modal hidden">
+    <div class="modal-content card">
+      <span class="close-button">&times;</span>
+      <h3>Appointment Details</h3>
+      <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+      <p><strong>Tech:</strong> <span id="modalTech"></span></p>
+      <p><strong>Start:</strong> <span id="modalStart"></span></p>
+      <p><strong>End:</strong> <span id="modalEnd"></span></p>
+      <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+      <p><strong>Customer:</strong> <span id="modalCustomer"></span></p>
+      <p><strong>Service:</strong> <span id="modalService"></span></p>
+    </div>
+  </div>
+
+  <script src="scheduler.js"></script>
+</body>
+</html>
